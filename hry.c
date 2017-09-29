@@ -9,9 +9,8 @@ char scan[10];
 char vartypes[128][16];
 char varvalues[128][16];
 char varnames[128][16];
-int addint;
 int intvalues[128];
-char addvarvalue[16];
+char addvarname[16];
 char found[128];
 int match(char first[],char second[]){
 	if(strlen(first)!=strlen(second)){
@@ -77,25 +76,28 @@ int variableset(){
 		vartypes[pos][letter]=found[pos];
 	}
 	letter=0;
-	while(character!=EOF){
+	add();
+	while(character!=' '){
+		if(character==EOF){
+			break;
+		}
 		add();
+	}
+	while(character==' '){
+		if(character==EOF){
+			break;
+		}
+		add();
+	}
+	while(character!=EOF){
 		if(character=='='||character=='\n'||character==';'){
 			break;
 		}
-		addvarvalue[letter]=character;
+		varnames[pos][letter]=character;
 		letter++;
+		add();
 	}
 	letter=0;
-	if(character!=EOF){
-		while(addvarvalue[letter]!=' '){
-			letter++;
-		}
-		while(letter<16){
-			varvalues[pos][charac]=addvarvalue[letter];
-			charac++;
-			letter++;
-		}
-	}
 	while(character!=EOF){
 		if(character==';'||character=='\n'){
 			break;
@@ -104,11 +106,22 @@ int variableset(){
 				intvalues[pos]=intvalues[pos]*10+(character-48);
 				add();
 			}
-		} else {
-
+			break;
+		} else if(character=='\''||character=='\"'){
+			add();
+			int a = 0;
+			while(character!='\''&&character!='\"'){
+				varvalues[pos][a]=characters();
+				add();
+				a++;
+			}
+			break;
 		}
 		add();
 	}
+	return 0;
+}
+int variableget(){
 	return 0;
 }
 int print(){
@@ -130,7 +143,7 @@ int print(){
 						add();
 					}
 				} else {
-					//variableget();
+					variableget();
 				}
 			}
 		} else {
