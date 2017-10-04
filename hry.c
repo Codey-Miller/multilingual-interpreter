@@ -4,14 +4,14 @@ typedef enum{false,true} bool;
 typedef char* str;
 char character;
 FILE *file;
-int x = 0;
-char scan[10];
+int x=0;
+char scan[100];
 char vartypes[128][16];
 char varvalues[128][16];
 char varnames[128][16];
 int intvalues[128];
-char addvarname[16];
 char found[128];
+str printfun[]={"print","write","echo","put","display","show","say",""};
 int match(char first[],char second[]){
 	if(strlen(first)!=strlen(second)){
 		return false;
@@ -26,7 +26,7 @@ int match(char first[],char second[]){
 }
 int add(){
 	character=fgetc(file);
-	if(scan[9]==0){
+	if(scan[99]==0){
 		x=0;
 		while(scan[x]!=0){
 			x++;
@@ -34,10 +34,10 @@ int add(){
 		scan[x]=character;
 	} else {
 		x=0;
-		for(x=0;x<10;x++){
+		for(x=0;x<100;x++){
 			scan[x]=scan[x+1];
 		}
-		scan[9]=character;
+		scan[99]=character;
 	}
 }
 char characters(){
@@ -161,19 +161,30 @@ int print(){
 	}
 	return 0;
 }
-bool check(char check[]){
-	int loop=0;
-	while(loop<strlen(check)){
-		if(scan[strlen(scan)-(strlen(check)-loop)]!=check[loop]){
-			return false;
+int check(str check[]){
+	int item=0;
+	int pos;
+	bool found;
+	int letter;
+	while(strlen(check[item])!=0){
+		found=true;
+		pos=0;
+		letter=0;
+		if(strlen(check[item])<=strlen(scan)){
+			pos=strlen(scan)-strlen(check[item]);
+			for(pos;pos<strlen(scan);pos++){
+				if(check[item][letter]!=scan[pos]){
+					found=false;
+				}
+				letter++;
+			}
+			if(found==true){
+				return true;
+			}
 		}
-		loop++;
+		item++;
 	}
-	int pos=0;
-	for(pos;pos<strlen(check);pos++){
-		found[pos]=check[pos];
-	}
-	return true;
+	return false;
 }
 FILE *open(str filename){
 	return fopen(filename, "r");
@@ -181,17 +192,14 @@ FILE *open(str filename){
 int lex(){
 	add();
 	while(character!=EOF){
-		if(check("print")||check("write")||check("echo")||check("put")||check("display")||check("show")||check("say")){
+		if(check(printfun)){
 			print();
-		} else if(check("var")||check("int")||check("bool")||check("char")||check("str")||check("string")){
-			variableset();
 		}
 		add();
 	}
 }
 int main(){
-	char filename[50]="hry.hry";
-	//scanf("%s",filename);
+	char filename[]="hry.hry";
 	file=open(filename);
 	lex();
 	getchar();
