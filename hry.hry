@@ -1,1 +1,2 @@
-echo "Hello World"
+string name = "Codey";
+echo "Hello " + name;

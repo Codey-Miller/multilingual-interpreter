@@ -6,12 +6,13 @@ char character;
 FILE *file;
 int x=0;
 char scan[100];
-char vartypes[128][16];
+str vartypes[128];
 char varvalues[128][16];
 char varnames[128][16];
 int intvalues[128];
-char found[128];
+str found;
 str printfun[]={"print","write","echo","put","display","show","say",""};
+str variabletypes[]={"var","int","bool","char","str","string",""};
 int match(char first[],char second[]){
 	if(strlen(first)!=strlen(second)){
 		return false;
@@ -72,9 +73,7 @@ int variableset(){
 	while(varvalues[pos][0]!=0){
 		pos++;
 	}
-	for(letter;letter<strlen(found);letter++){
-		vartypes[pos][letter]=found[pos];
-	}
+	vartypes[pos]=found;
 	letter=0;
 	add();
 	while(character!=' '){
@@ -96,6 +95,14 @@ int variableset(){
 		varnames[pos][letter]=character;
 		letter++;
 		add();
+	}
+	int item=127;
+	while(varnames[pos][item]==0){
+		item--;
+	}
+	while(varnames[pos][item]==' '){
+		varnames[pos][item]=0;
+		item--;
 	}
 	letter=0;
 	while(character!=EOF){
@@ -121,32 +128,101 @@ int variableset(){
 	}
 	return 0;
 }
+int checkchar(char check[]){
+	if(strlen(check)<=strlen(scan)){
+		int pos=strlen(scan)-strlen(check);
+		int letter=0;
+		for(pos;pos<strlen(scan);pos++){
+			if(check[letter]!=scan[pos]){
+				return false;
+			}
+			letter++;
+		}
+	}
+	found=check;
+	return true;
+}
+int checkstr(str check[]){
+	int item=0;
+	int pos;
+	bool hit;
+	int letter;
+	while(strlen(check[item])!=0){
+		hit=true;
+		pos=0;
+		letter=0;
+		if(strlen(check[item])<=strlen(scan)){
+			pos=strlen(scan)-strlen(check[item]);
+			for(pos;pos<strlen(scan);pos++){
+				if(check[item][letter]!=scan[pos]){
+					hit=false;
+				}
+				letter++;
+			}
+			if(hit==true){
+				found=check[item];
+				return true;
+			}
+		}
+		item++;
+	}
+	return false;
+}
 int variableget(){
+	int pos=0;
+	while(found!=varnames[pos]){
+		pos++;
+	}
+	if(vartypes[pos]=="int"){
+		printf("%d",intvalues[pos]);
+	} else {
+		printf("%s",varvalues[pos]);
+	}
 	return 0;
 }
-int print(){
+int printer(){
+	int pos;
 	while(character!=EOF){
-		add();
-		if(character=='('){
-			while(character!=')'){
+		pos=0;
+		if(character==';'||character=='\n'){
+			break;
+		}
+		if(character=='\"'||character=='\''){
+			add();
+			while(character!='\"'&&character!='\''){
 				if(character==EOF){
 					break;
 				}
+				printf("%c",characters());
 				add();
-				if(character=='\"'||character=='\''){
-					add();
-					while(character!='\"'&&character!='\''){
-						if(character==EOF){
-							break;
-						}
-						printf("%c",characters());
-						add();
-					}
-				} else {
-					variableget();
-				}
 			}
-		} else {
+		}
+		while(strlen(varnames[pos])!=0&&pos<=127){
+			if(checkchar(varnames[pos])){
+				variableget();
+			}
+			pos++;
+		}
+		add();
+	}
+}
+int print(){
+	while(character!=EOF){
+		if(character=='\n'||character==';'){
+			break;
+		}
+		add();
+		if(character=='('){
+			while(character!=')'){
+				printer();
+			}
+		} else if(character==' ') {
+			printer();
+		}
+	}
+	return 0;
+}
+/*
 			if(character=='\"'||character=='\''){
 				add();
 				while(character!='\"'&&character!='\''){
@@ -157,43 +233,17 @@ int print(){
 					add();
 				}
 			}
-		}
-	}
-	return 0;
-}
-int check(str check[]){
-	int item=0;
-	int pos;
-	bool found;
-	int letter;
-	while(strlen(check[item])!=0){
-		found=true;
-		pos=0;
-		letter=0;
-		if(strlen(check[item])<=strlen(scan)){
-			pos=strlen(scan)-strlen(check[item]);
-			for(pos;pos<strlen(scan);pos++){
-				if(check[item][letter]!=scan[pos]){
-					found=false;
-				}
-				letter++;
-			}
-			if(found==true){
-				return true;
-			}
-		}
-		item++;
-	}
-	return false;
-}
+*/
 FILE *open(str filename){
 	return fopen(filename, "r");
 }
 int lex(){
 	add();
 	while(character!=EOF){
-		if(check(printfun)){
+		if(checkstr(printfun)){
 			print();
+		} else if(checkstr(variabletypes)){
+			variableset();
 		}
 		add();
 	}
