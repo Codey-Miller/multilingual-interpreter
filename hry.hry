@@ -1,2 +1,2 @@
-string name = "Codey";
-echo "Hello " + name;
+str a = "then";
+echo ("hello "+a+" bye");
